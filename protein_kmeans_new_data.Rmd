@@ -1,0 +1,846 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(readxl)
+#install.packages("miscTools")
+library(miscTools)
+```
+
+
+```{r}
+protein_id_data = read_excel("protein_id.xls")
+View(protein_id_data)
+```
+```{r}
+#copying the data into another variable
+protein_id_data1 = protein_id_data
+```
+
+```{r}
+summary(protein_id_data)
+```
+```{r}
+str(protein_id_data)
+```
+**Data Cleaning**
+```{r}
+min_data_30 = protein_id_data1[,6:8]
+summary(min_data_30)
+min_30 = rowMedians(min_data_30, na.rm = TRUE)
+summary(min_30)
+```
+
+
+```{r}
+
+hr_1 = rowMedians(protein_id_data1[,11:12], na.rm = TRUE)
+summary(hr_1)
+```
+
+
+```{r}
+hr_2 = rowMedians(protein_id_data1[,15:16], na.rm = TRUE)
+summary(hr_2)
+```
+```{r}
+hr_3 = rowMedians(protein_id_data1[,19:21], na.rm = TRUE)
+summary(hr_3)
+```
+
+
+```{r}
+hr_4 = rowMedians(protein_id_data1[,24:25], na.rm = TRUE)
+summary(hr_4)
+```
+```{r}
+protein_median_data = data.frame(protein_id_data1[1:5],
+                                 min_30,protein_id_data1[9:10],
+                                 hr_1,protein_id_data1[13:14],
+                                 hr_2,protein_id_data1[17:18],
+                                 hr_3,protein_id_data1[22:23],
+                                 hr_4,protein_id_data1[26:27] )
+head(protein_median_data)
+View(protein_median_data)
+```
+
+**Saved the csv file with the changes made till here**
+```{r}
+#write.csv(protein_median_data, file = "protein_median_data.csv")
+```
+
+
+```{r}
+summary(protein_median_data)
+```
+**Function to replace NA's with zero value of that column**
+```{r}
+
+# changeNullToMedian = function(dat1){
+# for(i in 1:ncol(dat1)){
+#     dat1[i][is.na(dat1[i])] <- round(median(unlist(dat1[i]), na.rm = TRUE),1)
+# }
+#   return(dat1)
+# }
+# Cleaned_data = changeNullToMedian(protein_median_data)
+# View(Cleaned_data)
+# 
+
+
+changeNullToMedian = function(dat1){
+for(i in 1:ncol(dat1)){
+    dat1[i][is.na(dat1[i])] <- 0
+}
+  return(dat1)
+}
+protein_median_data = changeNullToMedian(protein_median_data)
+Cleaned_data = protein_median_data
+View(Cleaned_data)
+```
+```{r}
+summary(Cleaned_data)
+```
+
+```{r}
+# sum(is.na(protein_median_data))
+#Here, we can see that we had 3837 NA values in the data 
+sum(is.na(Cleaned_data))
+#Now, we have replaced all the NA's with median, hence no NA value
+```
+```{r}
+par(mfrow=c(3,2))
+#par( bg = "wheat")
+# plot(Cleaned_data$min_30, Cleaned_data$X30.min_Intensity, main = "Plot for Protein intensity at 30 minutes",ylab = "Intensity", xlab = "min_30", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+
+
+plot(Cleaned_data$X30.min_Intensity, Cleaned_data$min_30, main = "Plot for Protein intensity at 30 minutes",ylab = "min_30", xlab = "Intensity", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+
+
+plot(Cleaned_data$X1.h_Intensity, Cleaned_data$hr_1, main = "Plot for Protein intensity at 1 hour",ylab = "1_hr", xlab = "Intensity", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+
+
+plot(Cleaned_data$X2.h_Intensity, Cleaned_data$hr_2, main = "Plot for Protein intensity at 2 hour",ylab = "2_hr", xlab = "Intensity", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+
+
+plot(Cleaned_data$X3.h_Intensity, Cleaned_data$hr_3, main = "Plot for Protein intensity at 3 hour",ylab = "3_hr", xlab = "Intensity", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+
+
+plot(Cleaned_data$X4.h_Intensity, Cleaned_data$hr_4, main = "Plot for Protein intensity at 4 hrs",ylab = "4_hr", xlab = "Intensity", pch = 16, col="darkgreen", cex = 1, lwd = 1)
+```
+
+```{r}
+#Adding 1 to whole values as the zero will give infinite when we do log transformation in next step.
+Cleaned_data[6:20] = Cleaned_data[6:20] + 1
+summary(Cleaned_data)
+```
+
+```{r}
+par(mfrow=c(2,2))
+par( bg = "wheat")
+#boxplot(log_data[5:11])
+#plot(log_data[,6])
+hist(Cleaned_data$min_30,breaks = 15, col = 2, main = "Volume at 30 min")
+#hist(cleaned_raw_data$X15min,breaks = 15, col = 2, main = "Volume at 15 min")
+hist(Cleaned_data$X30.min_Intensity, breaks = 15, col = 2, main = "Intensity at 30 min")
+#hist(cleaned_raw_data$X3h)
+hist(Cleaned_data$Amount..ng....14, breaks = 15, col = 2, main = "Amount at 1 hour")
+#hist(cleaned_raw_data$X18h)
+hist(Cleaned_data$hr_4, breaks = 15, col = 2, main = "Volume at 4 hours")
+
+
+```
+
+
+```{r}
+#log data
+log_data = Cleaned_data
+log_data[6:20] = log(Cleaned_data[6:20])
+summary(log_data)
+
+```
+```{r}
+par(mfrow=c(2,2))
+par( bg = "wheat")
+#boxplot(log_data[5:11])
+#plot(log_data[,6])
+hist(log_data$min_30,breaks = 15, col = 3, main = "Volume at 30 min")
+#hist(cleaned_raw_data$X15min,breaks = 15, col = 2, main = "Volume at 15 min")
+hist(log_data$X30.min_Intensity, breaks = 15, col = 3, main = "Intensity at 30 min")
+#hist(cleaned_raw_data$X3h)
+hist(log_data$Amount..ng....14, breaks = 15, col = 3, main = "Amount at 1 hour")
+#hist(cleaned_raw_data$X18h)
+hist(log_data$hr_4, breaks = 15, col = 3, main = "Volume at 4 hours")
+
+
+```
+
+```{r}
+#Checking the histogram before and after log operations
+hist(Cleaned_data$X30.min_Intensity)
+hist(log_data$X30.min_Intensity)
+```
+
+
+```{r}
+norm_data = log_data
+#Normalizing the data
+#Applying min-max normalization
+normalize <- function(x, na.rm = TRUE) {
+    return((x- min(x)) /(max(x)-min(x)))
+}
+
+norm_data = normalize(log_data[6:20])
+View(norm_data)
+```
+
+
+```{r}
+summary(norm_data)
+```
+
+
+```{r}
+#Function to calculate AIC and BIC for the cluster models
+
+kmeansBIC = function(fit){
+
+m = ncol(fit$centers)
+n = length(fit$cluster)
+k = nrow(fit$centers)
+D = fit$tot.withinss
+return(data.frame(AIC = D + 2*m*k,
+                  BIC = D + log(n)*m*k))
+}
+```
+
+
+
+```{r}
+
+
+#The kmeans function also has an nstart option that attempts multiple initial configurations and reports on the best one. For example, adding nstart = 25 will generate 25 initial configurations. This approach is often recommended.
+
+RNGversion("3.5.2")
+#set.seed(2345) #algorithm utilizes random starting points
+model_protein2 = kmeans(norm_data, 2, nstart = 25, algorithm = c("Hartigan-Wong", "Lloyd", "Forgy",
+                     "MacQueen"), trace=FALSE)
+model_protein2$size
+kmeansBIC(model_protein2)
+
+
+model_protein2 = kmeans(norm_data, 2, nstart = 25, algorithm = "Hartigan-Wong", trace=FALSE)
+model_protein2$size
+kmeansBIC(model_protein2)
+
+model_protein2 = kmeans(norm_data, 2, nstart = 25, algorithm = "MacQueen", trace=FALSE)
+model_protein2$size
+kmeansBIC(model_protein2)
+```
+
+```{r}
+RNGversion("3.5.2")
+set.seed(2345) #algorithm utilizes random starting points
+model_protein3 = kmeans(norm_data, 3,nstart = 25)
+model_protein3$size
+#model_protein$cluster
+```
+
+
+```{r}
+RNGversion("3.5.2")
+set.seed(2345) #algorithm utilizes random starting points
+model_protein5 = kmeans(norm_data, 5,nstart = 25)
+model_protein5$size
+```
+
+
+```{r}
+RNGversion("3.5.2")
+set.seed(2345) #algorithm utilizes random starting points
+model_protein7 = kmeans(norm_data, 7, nstart = 25)
+model_protein7$size
+```
+
+
+
+```{r}
+RNGversion("3.5.2")
+set.seed(2345) #algorithm utilizes random starting points
+model_protein9 = kmeans(norm_data, 9, nstart = 25)
+model_protein9$size
+```
+
+
+```{r}
+RNGversion("3.5.2")
+set.seed(2345) #algorithm utilizes random starting points
+model_protein21 = kmeans(norm_data, 21, nstart = 25)
+model_protein21$size
+```
+
+
+```{r}
+
+# kmeansBIC(model_protein2)
+# kmeansBIC(model_protein3)
+# kmeansBIC(model_protein5)
+# kmeansBIC(model_protein7)
+# kmeansBIC(model_protein9)
+# kmeansBIC(model_protein21)
+
+
+df_aic_bic = rbind(kmeansBIC(model_protein2),
+                   kmeansBIC(model_protein3),
+                   kmeansBIC(model_protein5),
+                   kmeansBIC(model_protein7),
+                   kmeansBIC(model_protein9),
+                   kmeansBIC(model_protein21)) 
+df_aic_bic$cluster = (c(2,3,5,7,9,21))
+df_aic_bic
+plot(df_aic_bic$cluster ,df_aic_bic$AIC, type = "o" )
+plot(df_aic_bic$cluster, df_aic_bic$BIC, type = "o")
+```
+```{r}
+library(factoextra)
+library(NbClust)
+library(magrittr)
+library(cowplot)
+library(tidyr)
+library(dplyr)
+library(clustree)
+library(clValid)
+```
+
+**Naïve (K-means) Approach**
+```{r}
+##adding nstart = 30 will generate 30 initial configurations and then average all the centroid results.
+
+## Because the number of clusters (k) needs to be set before we start it can be advantageous to examine several different values of k.
+
+# kmean_calc <- function(df, ...){
+#   kmeans(df, scaled = ..., nstart = 30)
+# }
+km2 <- kmeans(norm_data, 2, nstart = 25)
+km3 <- kmeans(norm_data, 3, nstart = 25)
+km4 <- kmeans(norm_data, 4, nstart = 25)
+km5 <- kmeans(norm_data, 5, nstart = 25)
+
+km2$size
+km3$size
+
+p1 <- fviz_cluster(km2, data = norm_data,frame.type = "convex") + theme_minimal() + ggtitle("k = 2") 
+p2 <- fviz_cluster(km3, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 3")
+p3 <- fviz_cluster(km4, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 4")
+p4 <- fviz_cluster(km5, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 5")
+
+plot_grid(p1, p2, p3, p4,  labels = c("k2", "k3", "k4", "k5"))
+```
+```{r}
+km5 <- kmeans(norm_data, 5, nstart = 25)
+km6 <- kmeans(norm_data, 6, nstart = 25)
+km7 <- kmeans(norm_data, 7, nstart = 25)
+km9 <- kmeans(norm_data, 9, nstart = 25)
+
+km7$size
+
+p5 <- fviz_cluster(km5, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 5")
+p6 <- fviz_cluster(km6, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 6")
+p7 <- fviz_cluster(km7, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 7")
+p9 <- fviz_cluster(km9, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 9")
+plot_grid(p5, p6, p7, p9, labels = c("k5", "k6", "k7", "k9"))
+```
+
+
+```{r}
+km15 <- kmeans(norm_data, 15,nstart = 25)
+km20 <- kmeans(norm_data, 20,nstart = 25)
+km25 <- kmeans(norm_data, 25,nstart = 25)
+km30 <- kmeans(norm_data, 30,nstart = 25)
+p15 <- fviz_cluster(km15, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 15")
+p20 <- fviz_cluster(km20, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 20")
+p25 <- fviz_cluster(km25, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 25")
+p30 <- fviz_cluster(km30, data = norm_data, frame.type = "convex") + theme_minimal() + ggtitle("k = 30")
+plot_grid(p15, p20, p25, p30, labels = c("k15", "k20", "k25", "k30"))
+
+```
+
+
+**The “Elbow” Method**
+```{r}
+##Probably the most well known method, the elbow method, in which the sum of squares at each number of clusters is calculated and graphed, and the user looks for a change of slope from steep to shallow (an elbow) to determine the optimal number of clusters. 
+
+set.seed(31)
+# function to compute total within-cluster sum of squares
+fviz_nbclust(norm_data, kmeans, method = "wss", k.max = 24) + theme_minimal() + ggtitle("The Elbow Method")
+
+```
+
+**The Silhouette Method**
+```{r}
+fviz_nbclust(norm_data, kmeans, method = "silhouette", k.max = 24) + theme_minimal() + ggtitle("The Silhouette Plot")
+```
+
+
+
+**The Sum of Squares Method**
+```{r}
+#Another clustering validation method would be to choose the optimal number of cluster by minimizing the within-cluster sum of squares (a measure of how tight each cluster is) and maximizing the between-cluster sum of squares (a measure of how seperated each cluster is from the others).
+
+ssc <- data.frame(
+  kmeans = c(2,3,4,5,6,7,8),
+  within_ss = c(mean(km2$withinss), mean(km3$withinss), mean(km4$withinss), mean(km5$withinss), mean(km6$withinss), mean(km7$withinss), mean(km9$withinss)),
+  between_ss = c(km2$betweenss, km3$betweenss, km4$betweenss, km5$betweenss, km6$betweenss, km7$betweenss, km9$betweenss)
+)
+ssc %<>% gather(., key = "measurement", value = value, -kmeans)
+#ssc$value <- log10(ssc$value)
+ssc %>% ggplot(., aes(x=kmeans, y=log10(value), fill = measurement)) + geom_bar(stat = "identity", position = "dodge") + ggtitle("Cluster Model Comparison") + xlab("Number of Clusters") + ylab("Log10 Total Sum of Squares") + scale_x_discrete(name = "Number of Clusters", limits = c("0", "2", "3", "4", "5", "6", "7", "9"))
+
+```
+
+**Label the proteins using k = 7**
+```{r}
+#adding a new column cluster to the data
+protein_median_data$clusters = km7$cluster
+km7$size
+
+#The labels are added to the data using k=7. We can see the data
+View(protein_median_data)
+```
+
+```{r}
+#install.packages("caret")
+#install.packages("randomForest")
+library(caret)
+library(randomForest)
+```
+**Dividing the data into train and test datasets randomly**
+
+```{r}
+#1210 * 0.9
+
+set.seed(10)
+train_sample <- sample(1210, 1089)
+
+#split the data frames
+train_data <- protein_median_data[train_sample, ]
+test_data  <- protein_median_data[-train_sample, ]
+
+#Class Label
+train_data_labels <- train_data[,21]
+test_data_labels  <- test_data[,21]
+
+
+# check the proportion of class variable
+round(prop.table(table(train_data_labels)),2)
+round(prop.table(table(test_data_labels)),2)
+```
+
+
+```{r}
+#specify the cross-validation method
+#ctrl <- trainControl(method = "cv", number = 4)
+
+```
+**Classification Using Random Forest**
+```{r}
+#Taking a lot of time 
+#rf_model <- train(clusters ~ ., data = train_data,  method = "rf", trControl = ctrl)
+# Testing the model Performance
+# predict_test <- predict(rf_model, test_data) #Apply the model on the Test data.
+#predict_test
+# 
+# 
+# CrossTable(x = test_data_labels, y= predict_test,
+#            prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+#            dnn = c('actual default', 'predicted default'))
+```
+
+
+**Just to check the least accuracy which can be achieved using Random Forest, I have opted the manual method** 
+```{r}
+set.seed(123)
+rf <- randomForest(clusters ~ ., data = train_data[,6:21])
+rf
+
+rf_pred <- as.numeric(round(predict(rf, test_data[,6:20])))
+
+confusionMatrix(as.factor(rf_pred),as.factor(test_data_labels))
+
+```
+
+```{r}
+set.seed(345)
+rf <- randomForest(clusters ~ ., data = train_data[,6:21])
+rf
+
+rf_pred <- as.numeric(round(predict(rf, test_data[,6:20])))
+
+confusionMatrix(as.factor(rf_pred),as.factor(test_data_labels))
+
+```
+
+```{r}
+set.seed(678)
+rf <- randomForest(clusters ~ ., data = train_data[,6:21])
+rf
+
+rf_pred <- as.numeric(round(predict(rf, test_data[,6:20])))
+
+confusionMatrix(as.factor(rf_pred),as.factor(test_data_labels))
+
+```
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+#Average accuracy for above 3 result
+(0.9587+ 0.9669 +0.9421)/3
+#0.9559
+plot(rf_pred, main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+
+**Apply bagging algorithm: TREEBAG**
+```{r}
+#set.seed(300)
+ctrl <- trainControl(method = "cv", number = 10)
+m <- train(clusters ~ ., data = train_data[,6:21], method = "treebag",  trControl = ctrl )
+m
+
+#Accuracy   Kappa    
+#0.9867877  0.983212
+
+
+
+# Testing the model Performance
+predict_test <- predict(m, test_data[,6:20]) #Apply the model on the Test data.
+#predict_test
+
+
+CrossTable(x = test_data_labels, y= predict_test,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('actual cluster', 'predicted cluster'))
+
+#Accuracy = 100 - 100*(7/302) = 97.68%
+
+
+```
+
+```{r}
+plot(as.numeric(predict_test))
+plot(test_data_labels)
+```
+
+```{r}
+#install.packages("C50")
+#install.packages("gmodels")
+library(C50)
+library(gmodels)
+```
+
+
+**Apply boosting algorithm: Decision Tree **
+```{r}
+#Method1
+#Boosting using c5.0 Decision Tree 
+train_data$clusters = as.factor(train_data$clusters)
+set.seed(100)
+m_c50_bst = C5.0(clusters ~ ., data = train_data[,6:21], trials = 100)
+m_c50_bst
+
+#summary(m_c50_bst)
+
+# Testing the model Performance
+predict_test <- predict(m_c50_bst, test_data[,6:20]) #Apply the model on the Test data.
+#predict_test
+
+
+CrossTable(x = test_data_labels, y= predict_test,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('actual cluster', 'predicted cluster'))
+#Accuracy = 100 - 100*(3/121) = 97.52%
+
+```
+
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(predict_test), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+
+**Neural Network**
+```{r}
+#install.packages("neuralnet")
+library(neuralnet)
+```
+
+#Neural Network works on the basis of distance. Lets normalize the data
+```{r}
+normalized_train_data = train_data
+normalized_train_data = normalize(normalized_train_data[6:20])
+#normalized_train_data$cluster = train_data$clusters
+normalized_train_data$cluster = normalize(as.numeric(train_data$clusters))
+str(normalized_train_data)
+```
+```{r}
+normalized_test_data = test_data
+normalized_test_data = normalize(normalized_test_data[6:20])
+#normalized_test_data$cluster = test_data$clusters
+normalized_test_data$cluster = normalize(as.numeric(test_data$clusters))
+str(normalized_test_data)
+summary(normalized_test_data)
+```
+**ANN_2**
+```{r}
+set.seed(10)
+neural_model1 = neuralnet(cluster ~ min_30 + X30.min_Intensity + Amount..ng....10 + 
+                           hr_1 + X1.h_Intensity + Amount..ng....14 +
+                           hr_2 + X2.h_Intensity + Amount..ng....18 +
+                           hr_3 + X3.h_Intensity + Amount..ng....23 + 
+                           hr_4 + X4.h_Intensity + Amount..ng....27, data = normalized_train_data, hidden = 2)
+
+plot(neural_model1)
+
+```
+
+
+```{r}
+model_results1 = compute(neural_model1, normalized_test_data[1:15])
+
+#Here, compute() returns a list with two components: $neurons which stores the neurons for each layers and $net.results which stores the predicted values.
+
+#Let's get the results
+predict_N_labels1 = model_results1$net.result
+
+#Let's check the correlation between two numeric vectors
+cor(predict_N_labels1, normalized_test_data$cluster)
+
+#1 - 0.414
+#2 - 0.77
+#6 - Error in plot.nn(neural_model) : weights were not calculated
+
+```
+
+```{r}
+#Denormalizing the output labels
+denormalize <- function(x,minval,maxval) {
+    x*(maxval-minval) + minval
+}
+
+ann_labels_denormalized1 = round(denormalize(predict_N_labels1,1,7))
+ann_labels_denormalized1 = ann_labels_denormalized1[ann_labels_denormalized1 >0]
+```
+
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(ann_labels_denormalized1), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+**ANN_2**
+```{r}
+set.seed(10)
+neural_model3 = neuralnet(cluster ~ min_30 + X30.min_Intensity + Amount..ng....10 + 
+                           hr_1 + X1.h_Intensity + Amount..ng....14 +
+                           hr_2 + X2.h_Intensity + Amount..ng....18 +
+                           hr_3 + X3.h_Intensity + Amount..ng....23 + 
+                           hr_4 + X4.h_Intensity + Amount..ng....27, data = normalized_train_data, hidden = 3)
+
+plot(neural_model3)
+
+```
+
+
+```{r}
+model_results3 = compute(neural_model3, normalized_test_data[1:15])
+
+#Here, compute() returns a list with two components: $neurons which stores the neurons for each layers and $net.results which stores the predicted values.
+
+#Let's get the results
+predict_N_labels3 = model_results3$net.result
+
+#Let's check the correlation between two numeric vectors
+cor(predict_N_labels3, normalized_test_data$cluster)
+#Here, the correlation is .832 which shows the strong relationship which means that the model is doing a fairly good job even with single hidden node.
+
+
+
+#6 - Error in plot.nn(neural_model) : weights were not calculated
+
+```
+
+```{r}
+#Denormalizing the output labels
+denormalize <- function(x,minval,maxval) {
+    x*(maxval-minval) + minval
+}
+
+ann_labels_denormalized3 = round(denormalize(predict_N_labels3,1,7))
+ann_labels_denormalized3 = ann_labels_denormalized3[ann_labels_denormalized3 >0]
+```
+
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(ann_labels_denormalized3), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+**ANN_3**
+```{r}
+set.seed(10)
+neural_model = neuralnet(cluster ~ min_30 + X30.min_Intensity + Amount..ng....10 + 
+                           hr_1 + X1.h_Intensity + Amount..ng....14 +
+                           hr_2 + X2.h_Intensity + Amount..ng....18 +
+                           hr_3 + X3.h_Intensity + Amount..ng....23 + 
+                           hr_4 + X4.h_Intensity + Amount..ng....27, data = normalized_train_data, hidden = 5)
+
+plot(neural_model)
+
+```
+
+
+
+
+```{r}
+model_results = compute(neural_model, normalized_test_data[1:15])
+
+#Here, compute() returns a list with two components: $neurons which stores the neurons for each layers and $net.results which stores the predicted values.
+
+#Let's get the results
+predict_N_labels = model_results$net.result
+
+#Let's check the correlation between two numeric vectors
+cor(predict_N_labels, normalized_test_data$cluster)
+#Here, the correlation is .832 which shows the strong relationship which means that the model is doing a fairly good job even with single hidden node.
+plot(predict_N_labels)
+plot(normalized_test_data$cluster)
+
+#1 - 0.628
+#2 - 0.726
+#3 
+#4 - 0.878
+#5 - 0.887
+
+#6 - Error in plot.nn(neural_model) : weights were not calculated
+
+```
+```{r}
+#Denormalizing the output labels
+denormalize <- function(x,minval,maxval) {
+    x*(maxval-minval) + minval
+}
+
+ann_labels_denormalized = round(denormalize(predict_N_labels,1,7))
+ann_labels_denormalized = ann_labels_denormalized[ann_labels_denormalized >0]
+```
+
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(ann_labels_denormalized), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+**SVM**
+
+```{r}
+library(kernlab)
+```
+
+
+```{r}
+#Using the linear kernel: vanilladot
+#table(train_data$clusters)
+svm_model_l <- ksvm(clusters ~ ., data = train_data[6:21],kernel = "vanilladot")
+svm_model_l
+```
+
+```{r}
+
+#•	Test the model on the testing set and evaluate model’s performance. 
+svm_predict_l <- predict(svm_model, test_data[,6:20]) #default parameter type = "response"
+
+#Compare the predicted letter to the true letter in the testing dataset.
+#table(svm_predict, test_data_labels)
+
+CrossTable(x = test_data_labels, y= svm_predict_l,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('actual cluster', 'predicted cluster'))
+```
+
+
+```{r}
+
+#Calculating the overall accuracy
+agreement <- svm_predict_l == test_data_labels
+
+table(agreement)
+
+#classifier correctly identified the cluster in 229 out of the 302 test records
+
+prop.table(table(agreement))
+
+```
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(svm_predict_l), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+```{r}
+#Changing the kernel:- non-linear kernel (“rbfdot”)
+svm_model <- ksvm(clusters ~ ., data = train_data[6:21],kernel = "rbfdot")
+svm_model
+
+```
+
+
+
+```{r}
+
+#•	Test the model on the testing set and evaluate model’s performance. 
+svm_predict <- predict(svm_model, test_data[,6:20]) #default parameter type = "response"
+
+#Compare the predicted letter to the true letter in the testing dataset.
+#table(svm_predict, test_data_labels)
+
+CrossTable(x = test_data_labels, y= svm_predict,
+           prop.chisq = FALSE, prop.c = FALSE, prop.r = FALSE,
+           dnn = c('actual cluster', 'predicted cluster'))
+```
+
+
+
+```{r}
+
+#Calculating the overall accuracy
+agreement <- svm_predict == test_data_labels
+
+table(agreement)
+
+#classifier correctly identified the cluster in 229 out of the 302 test records
+
+prop.table(table(agreement))
+
+```
+
+```{r}
+par(mfrow=c(1,2))
+par( bg = "wheat")
+
+plot(as.numeric(svm_predict), main = "Plot for Predicted Labels", pch = 16, ylab = "Predicted Labels", col="red", cex = 1, lwd = 1)
+plot(test_data_labels,main = "Plot for Ground Truth", pch = 16, ylab = "Ground Truth Labels", col="darkgreen", cex = 1, lwd = 1)
+```
+
+
