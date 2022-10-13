@@ -1,1 +1,6 @@
-In this project, k-means clustering algorithm is used for the classification of numerous proteins of human urine deposition on catheter surfaces. By the measurements of deposit volume at various time points, the proteins deposit volumes are showing messy and irregular changes and are hard to be classified. To cluster the “behavior” of proteins deposit change, this report used the k-means algorithm as a classifier and used the elbow method, silhouette method, and sum of squares method to get the appropriate value of k-means clusters. The proteins are labeled with seven classes. After that, data mining algorithms such as random forest, decision tree, artificial neural network & support vector machines (SVM) are used to verify the accuracy of classification.
+In this project, k-means clustering algorithm is used for the classification of numerous proteins of human urine deposition on catheter surfaces.
+By the measurements of deposit volume at various time points, the proteins deposit volumes are showing messy and irregular changes and are hard to be classified.
+To cluster the “behavior” of proteins deposit change, this report used the k-means algorithm as a classifier and used the elbow method, silhouette method, 
+and sum of squares method to get the appropriate value of k-means clusters. The proteins are labeled with seven classes.
+After that, data mining algorithms such as random forest, decision tree, artificial neural network & support vector machines (SVM) are used to verify the accuracy of 
+classification.
